@@ -5,9 +5,11 @@ name: Publish UI Kit to npm
 #   1. Configure Trusted Publishing on npmjs.com (replaces NPM_TOKEN):
 #      npmjs.com → @aindy/ui-kit → Settings → Trusted Publishers → Add
 #        Publisher:   GitHub Actions
-#        Repository:  Masterplanner25/aindy-ui-kit
+#        Owner:       Masterplanner25   ← CASE-SENSITIVE, must match GitHub username exactly
+#        Repository:  aindy-ui-kit      ← repo name only, not owner/repo
 #        Workflow:    publish.yml
 #        Environment: npm-production
+#        Allowed actions: Publish        ← must check at least one
 #
 #   2. Create a GitHub Environment (Settings → Environments):
 #      npm-production — add yourself as a required reviewer (manual approval gate)
