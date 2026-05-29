@@ -1,6 +1,6 @@
 {
   "name": "@aindy/ui-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared UI components, contexts, and API core for the AINDY platform",
   "type": "module",
   "main": "dist/index.cjs",
