@@ -1,7 +1,11 @@
 {
   "name": "@aindy/ui-kit",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Shared UI components, contexts, and API core for the AINDY platform",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Masterplanner25/aindy-ui-kit.git"
+  },
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
