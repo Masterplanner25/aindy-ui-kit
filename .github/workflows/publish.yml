@@ -133,7 +133,9 @@ jobs:
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          # registry-url intentionally omitted: setting it causes actions/setup-node
+          # to inject NODE_AUTH_TOKEN=github.token, which overrides OIDC auth and
+          # causes npm to reject the publish with E404.
 
       - name: Ensure npm 11.5.1+ for OIDC trusted publishing
         run: npm install -g npm@latest
