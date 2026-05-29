@@ -2,12 +2,17 @@ name: Publish UI Kit to npm
 
 # Requires one-time setup before this workflow can publish:
 #
-#   1. Create an NPM_TOKEN secret in this repo (Settings → Secrets → Actions):
-#      Generate a Publish token at npmjs.com → Access Tokens → Generate New Token
-#      with write access to the @aindy scope.
+#   1. Configure Trusted Publishing on npmjs.com (replaces NPM_TOKEN):
+#      npmjs.com → @aindy/ui-kit → Settings → Trusted Publishers → Add
+#        Publisher:   GitHub Actions
+#        Repository:  Masterplanner25/aindy-ui-kit
+#        Workflow:    publish.yml
+#        Environment: npm-production
 #
 #   2. Create a GitHub Environment (Settings → Environments):
 #      npm-production — add yourself as a required reviewer (manual approval gate)
+#
+#   Note: No NPM_TOKEN secret needed — OIDC trusted publishing handles auth.
 
 on:
   push:
@@ -127,7 +132,7 @@ jobs:
     steps:
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
       - name: Download release tarball
@@ -136,9 +141,7 @@ jobs:
           name: ui-kit-tarball
 
       - name: Publish to npm
-        run: npm publish *.tgz --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish *.tgz --provenance --access public
 
   github-release:
     name: Create GitHub Release
