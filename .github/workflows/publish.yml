@@ -149,7 +149,7 @@ jobs:
           name: ui-kit-tarball
 
       - name: Publish to npm
-        run: npm publish *.tgz --access public
+        run: npm publish *.tgz --provenance --access public
 
   github-release:
     name: Create GitHub Release
