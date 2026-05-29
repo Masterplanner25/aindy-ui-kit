@@ -144,7 +144,6 @@ jobs:
       - name: Strip _authToken from .npmrc to allow OIDC
         run: |
           printf "registry=https://registry.npmjs.org/\n" > "$NPM_CONFIG_USERCONFIG"
-          echo "=== .npmrc after reset ==="
           cat "$NPM_CONFIG_USERCONFIG"
 
       - name: Download release tarball
@@ -152,8 +151,11 @@ jobs:
         with:
           name: ui-kit-tarball
 
+      - name: Extract tarball for directory publish
+        run: tar xzf *.tgz
+
       - name: Publish to npm
-        run: npm publish *.tgz --provenance --access public
+        run: npm publish package/ --provenance --access public
 
   github-release:
     name: Create GitHub Release
