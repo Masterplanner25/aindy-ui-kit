@@ -63,15 +63,11 @@ export function taggedRequest(domain, apiFn) {
 }
 
 export function unwrapEnvelope(response) {
-  // Option B: the client still has many callers that depend on raw execution
-  // envelopes, so unwrapping is opt-in at the API module layer for now.
-  if (
-    response &&
-    typeof response === "object" &&
-    "data" in response &&
-    "error" in response
-  ) {
-    if (response.error) {
+  // Unwrap any enveloped response that carries a `data` payload.
+  // Execution envelopes additionally carry `error`; surface it as ApiError.
+  // Auth envelopes carry { status, data, trace_id, metadata } with no top-level error.
+  if (response && typeof response === "object" && "data" in response) {
+    if ("error" in response && response.error) {
       throw new ApiError(200, response.error, response);
     }
     return response.data ?? response;
