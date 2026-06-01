@@ -1,6 +1,6 @@
 {
   "name": "@aindy/ui-kit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Shared UI components, contexts, and API core for the AINDY platform",
   "repository": {
     "type": "git",
