@@ -1,4 +1,6 @@
-const BASE = ""; // Set to "/api/v1" when backend versioning is added
+const BASE = "";              // root: auth, identity, health, client
+const APPS = `${BASE}/apps`;  // app-domain: agent, memory, coordination
+const PLAT = `${BASE}/platform`; // runtime platform layer: flows, observability, nodus, queue
 
 const AUTH = Object.freeze({
   LOGIN: `${BASE}/auth/login`,
@@ -22,16 +24,16 @@ const ARM = Object.freeze({
 });
 
 const AGENT = Object.freeze({
-  CREATE_RUN: `${BASE}/agent/run`,
-  RUNS: `${BASE}/agent/runs`,
-  RUN: (runId) => `${BASE}/agent/runs/${runId}`,
-  APPROVE: (runId) => `${BASE}/agent/runs/${runId}/approve`,
-  REJECT: (runId) => `${BASE}/agent/runs/${runId}/reject`,
-  STEPS: (runId) => `${BASE}/agent/runs/${runId}/steps`,
-  EVENTS: (runId) => `${BASE}/agent/runs/${runId}/events`,
-  TOOLS: `${BASE}/agent/tools`,
-  TRUST: `${BASE}/agent/trust`,
-  SUGGESTIONS: `${BASE}/agent/suggestions`,
+  CREATE_RUN: `${APPS}/agent/run`,
+  RUNS: `${APPS}/agent/runs`,
+  RUN: (runId) => `${APPS}/agent/runs/${runId}`,
+  APPROVE: (runId) => `${APPS}/agent/runs/${runId}/approve`,
+  REJECT: (runId) => `${APPS}/agent/runs/${runId}/reject`,
+  STEPS: (runId) => `${APPS}/agent/runs/${runId}/steps`,
+  EVENTS: (runId) => `${APPS}/agent/runs/${runId}/events`,
+  TOOLS: `${APPS}/agent/tools`,
+  TRUST: `${APPS}/agent/trust`,
+  SUGGESTIONS: `${APPS}/agent/suggestions`,
 });
 
 const ANALYTICS = Object.freeze({
@@ -86,18 +88,18 @@ const MASTERPLAN = Object.freeze({
 });
 
 const MEMORY = Object.freeze({
-  AGENTS: `${BASE}/memory/agents`,
-  AGENT_RECALL: (namespace) => `${BASE}/memory/agents/${namespace}/recall`,
-  FEDERATED_RECALL: `${BASE}/memory/federated/recall`,
-  NODES: `${BASE}/memory/nodes`,
-  RECALL_V3: `${BASE}/memory/recall/v3`,
-  SUGGEST: `${BASE}/memory/suggest`,
-  NODE_FEEDBACK: (nodeId) => `${BASE}/memory/nodes/${nodeId}/feedback`,
-  NODE_PERFORMANCE: (nodeId) => `${BASE}/memory/nodes/${nodeId}/performance`,
-  NODE_TRAVERSE: (nodeId) => `${BASE}/memory/nodes/${nodeId}/traverse`,
-  NODE_HISTORY: (nodeId) => `${BASE}/memory/nodes/${nodeId}/history`,
-  NODE_SHARE: (nodeId) => `${BASE}/memory/nodes/${nodeId}/share`,
-  METRICS_DASHBOARD: `${BASE}/memory/metrics/dashboard`,
+  AGENTS: `${APPS}/memory/agents`,
+  AGENT_RECALL: (namespace) => `${APPS}/memory/agents/${namespace}/recall`,
+  FEDERATED_RECALL: `${APPS}/memory/federated/recall`,
+  NODES: `${APPS}/memory/nodes`,
+  RECALL_V3: `${APPS}/memory/recall/v3`,
+  SUGGEST: `${APPS}/memory/suggest`,
+  NODE_FEEDBACK: (nodeId) => `${APPS}/memory/nodes/${nodeId}/feedback`,
+  NODE_PERFORMANCE: (nodeId) => `${APPS}/memory/nodes/${nodeId}/performance`,
+  NODE_TRAVERSE: (nodeId) => `${APPS}/memory/nodes/${nodeId}/traverse`,
+  NODE_HISTORY: (nodeId) => `${APPS}/memory/nodes/${nodeId}/history`,
+  NODE_SHARE: (nodeId) => `${APPS}/memory/nodes/${nodeId}/share`,
+  METRICS_DASHBOARD: `${APPS}/memory/metrics/dashboard`,
 });
 
 const SEARCH = Object.freeze({
@@ -149,18 +151,18 @@ const RIPPLETRACE = Object.freeze({
 });
 
 const OPERATOR = Object.freeze({
-  FLOW_RUNS: `${BASE}/flows/runs`,
-  FLOW_RUN: (runId) => `${BASE}/flows/runs/${runId}`,
-  FLOW_RUN_HISTORY: (runId) => `${BASE}/flows/runs/${runId}/history`,
-  FLOW_RUN_RESUME: (runId) => `${BASE}/flows/runs/${runId}/resume`,
-  FLOW_REGISTRY: `${BASE}/flows/registry`,
-  FLOW_STRATEGIES: `${BASE}/flows/strategies`,
-  AUTOMATION_LOGS: `${BASE}/automation/logs`,
-  AUTOMATION_LOG: (logId) => `${BASE}/automation/logs/${logId}`,
-  AUTOMATION_REPLAY: (logId) => `${BASE}/automation/logs/${logId}/replay`,
-  SCHEDULER_STATUS: `${BASE}/automation/scheduler/status`,
-  OBSERVABILITY_REQUESTS: `${BASE}/observability/requests`,
-  OBSERVABILITY_DASHBOARD: `${BASE}/observability/dashboard`,
+  FLOW_RUNS: `${PLAT}/flows/runs`,
+  FLOW_RUN: (runId) => `${PLAT}/flows/runs/${runId}`,
+  FLOW_RUN_HISTORY: (runId) => `${PLAT}/flows/runs/${runId}/history`,
+  FLOW_RUN_RESUME: (runId) => `${PLAT}/flows/runs/${runId}/resume`,
+  FLOW_REGISTRY: `${PLAT}/flows/registry`,
+  FLOW_STRATEGIES: `${PLAT}/flows/strategies`,          // DEAD — no backend route (audit)
+  AUTOMATION_LOGS: `${BASE}/automation/logs`,            // DEAD — not served (audit)
+  AUTOMATION_LOG: (logId) => `${BASE}/automation/logs/${logId}`,           // DEAD (audit)
+  AUTOMATION_REPLAY: (logId) => `${BASE}/automation/logs/${logId}/replay`, // DEAD (audit)
+  SCHEDULER_STATUS: `${PLAT}/observability/scheduler/status`,
+  OBSERVABILITY_REQUESTS: `${PLAT}/observability/requests`,
+  OBSERVABILITY_DASHBOARD: `${PLAT}/observability/dashboard`,
   CLIENT_ERROR: `${BASE}/client/error`,
   CLIENT_VITALS: `${BASE}/client/vitals`,
 });
