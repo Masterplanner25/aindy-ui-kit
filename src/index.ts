@@ -15,7 +15,7 @@ export {
   API_BASE,
 } from "./api/_core.js";
 
-export { ROUTES } from "./api/_routes.js";
+export { ROUTES, FEATURE_FLAGS } from "./api/_routes.js";
 export { bootIdentity, loginUser, registerUser } from "./api/auth.js";
 
 // Contexts

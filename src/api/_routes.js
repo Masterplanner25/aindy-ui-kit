@@ -16,6 +16,9 @@ export const FEATURE_FLAGS = Object.freeze({
   // SCHED-001 / SCHED-002 / SCHED-003 — scheduler status flow fails in platform-only
   // profile (tasks domain absent); keep deferred until tasks domain is available
   OPERATOR_SCHEDULER_STATUS: false,
+  // RIPPLE-ROUTES-001 — load-trace issues GET /rippletrace/{id} (bare monolith path,
+  // no /platform prefix, unserved runtime-only); full Proofboard is monolith pending integration
+  RIPPLETRACE_VIEWER:        false,
 });
 
 // ─── Served groups ─────────────────────────────────────────────────────────────
