@@ -1,6 +1,6 @@
 import { safeMap } from "../utils/safe.js";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 const TOKEN_STORAGE_KEY = "token";
 const LEGACY_TOKEN_STORAGE_KEY = "aindy_token";
 const CLIENT_VERSION = globalThis.__AINDY_APP_VERSION_OVERRIDE__ || __APP_VERSION__;
@@ -70,7 +70,9 @@ export function unwrapEnvelope(response) {
     if ("error" in response && response.error) {
       throw new ApiError(200, response.error, response);
     }
-    return response.data ?? response;
+    // `?? response` would re-surface the envelope when data is null — return
+    // null explicitly so callers can distinguish "no data" from "not an envelope".
+    return response.data !== undefined ? response.data : response;
   }
   return response;
 }
