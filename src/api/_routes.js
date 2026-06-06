@@ -52,6 +52,8 @@ const AGENT = Object.freeze({
   RUN: (runId) => `${APPS}/agent/runs/${runId}`,
   APPROVE: (runId) => `${APPS}/agent/runs/${runId}/approve`,
   REJECT: (runId) => `${APPS}/agent/runs/${runId}/reject`,
+  RECOVER: (runId) => `${APPS}/agent/runs/${runId}/recover`,
+  REPLAY: (runId) => `${APPS}/agent/runs/${runId}/replay`,
   STEPS: (runId) => `${APPS}/agent/runs/${runId}/steps`,
   EVENTS: (runId) => `${APPS}/agent/runs/${runId}/events`,
   TOOLS: `${APPS}/agent/tools`,
