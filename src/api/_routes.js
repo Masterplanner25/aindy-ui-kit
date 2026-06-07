@@ -25,6 +25,7 @@ export const FEATURE_FLAGS = Object.freeze({
 const AUTH = Object.freeze({
   LOGIN: `${BASE}/auth/login`,
   REGISTER: `${BASE}/auth/register`,
+  LOGOUT: `${BASE}/auth/logout`,
 });
 
 // ─── TASKS — monolith-only, not served by aindy-runtime ───────────────────────

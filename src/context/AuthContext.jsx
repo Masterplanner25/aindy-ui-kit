@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { clearStoredToken, getStoredToken, setStoredToken } from "../api/_core.js";
-import { loginUser, registerUser } from "../api/auth.js";
+import { loginUser, logoutUser, registerUser } from "../api/auth.js";
 
 const AuthContext = createContext(null);
 
@@ -104,6 +104,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    logoutUser();
     clearStoredToken();
     setToken(null);
   };
