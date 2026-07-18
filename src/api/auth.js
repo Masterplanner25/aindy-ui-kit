@@ -15,6 +15,13 @@ export function registerUser(credentials) {
   }).then(unwrapEnvelope);
 }
 
+export function logoutUser(token = getStoredToken()) {
+  return request(ROUTES.AUTH.LOGOUT, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).catch(() => null);
+}
+
 export function bootIdentity(token = getStoredToken()) {
   return request(ROUTES.IDENTITY.BOOT, {
     method: "GET",
