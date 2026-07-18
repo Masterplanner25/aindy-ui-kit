@@ -9,8 +9,9 @@ const PLAT = `${BASE}/platform`; // runtime platform layer: flows, observability
 // on FEATURE_FLAGS.<key> so that flipping the flag brings route + NavLink alive
 // together without further code changes.
 export const FEATURE_FLAGS = Object.freeze({
-  // TODO: OPER-DEFER-001 — /platform/flows/strategies not yet served by runtime
-  OPERATOR_FLOW_STRATEGIES:  false,
+  // OPER-DEFER-001 CLOSED 2026-06-15 — /platform/flows/strategies is served by the runtime
+  // (AINDY/routes/platform/flows_router.py). Flag kept for NavLink parity; now true.
+  OPERATOR_FLOW_STRATEGIES:  true,
   // TODO: OPER-DEFER-002 — /automation/logs not yet served (lives in monolith today)
   OPERATOR_AUTOMATION_LOGS:  false,
   // SCHED-001 / SCHED-002 / SCHED-003 — scheduler status flow fails in platform-only
@@ -195,6 +196,7 @@ const OPERATOR = Object.freeze({
   FLOW_RUN_HISTORY: (runId) => `${PLAT}/flows/runs/${runId}/history`,
   FLOW_RUN_RESUME: (runId) => `${PLAT}/flows/runs/${runId}/resume`,
   FLOW_REGISTRY: `${PLAT}/flows/registry`,
+  FLOW_STRATEGIES: `${PLAT}/flows/strategies`, // runtime: served (OPER-DEFER-001 closed); NavLink gates on FEATURE_FLAGS.OPERATOR_FLOW_STRATEGIES
   RIPPLETRACE_STATUS: `${PLAT}/observability/rippletrace/status`, // runtime: served
   OBSERVABILITY_REQUESTS: `${PLAT}/observability/requests`,
   OBSERVABILITY_DASHBOARD: `${PLAT}/observability/dashboard`,
@@ -202,8 +204,6 @@ const OPERATOR = Object.freeze({
   CLIENT_VITALS: `${BASE}/client/vitals`,
 
   // ── Deferred-runtime (constants live; gate NavLinks on FEATURE_FLAGS key) ─
-  // TODO: OPER-DEFER-001 — /platform/flows/strategies not yet served
-  FLOW_STRATEGIES: `${PLAT}/flows/strategies`,          // FEATURE_FLAGS.OPERATOR_FLOW_STRATEGIES
   // TODO: OPER-DEFER-002 — /automation/logs not yet served (monolith today)
   AUTOMATION_LOGS: `${BASE}/automation/logs`,            // FEATURE_FLAGS.OPERATOR_AUTOMATION_LOGS
   AUTOMATION_LOG: (logId) => `${BASE}/automation/logs/${logId}`,           // FEATURE_FLAGS.OPERATOR_AUTOMATION_LOGS
