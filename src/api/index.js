@@ -15,4 +15,12 @@ export {
 } from "./_core.js";
 
 export { ROUTES } from "./_routes.js";
-export { bootIdentity, loginUser, registerUser } from "./auth.js";
+export {
+  bootIdentity,
+  changePassword,
+  forgotPassword,
+  loginUser,
+  registerUser,
+  resetPassword,
+  verifyEmail,
+} from "./auth.js";

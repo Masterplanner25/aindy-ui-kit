@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { clearStoredToken, getStoredToken, setStoredToken } from "../api/_core.js";
-import { loginUser, logoutUser, registerUser } from "../api/auth.js";
+import {
+  changePassword,
+  loginUser,
+  logoutUser,
+  registerUser,
+  verifyEmail,
+} from "../api/auth.js";
 
 const AuthContext = createContext(null);
 
@@ -92,15 +98,60 @@ export function AuthProvider({ children }) {
     return nextToken;
   };
 
+  /**
+   * Begin registration. Against runtime >= 2.0.0 this does NOT sign the user in.
+   *
+   * Registration returns 202 with no token, deliberately: the response is identical
+   * whether or not the address was already registered, which is what closes the
+   * account-enumeration oracle — and a duplicate cannot be handed a token. The caller
+   * should render "check your email", not navigate to an authenticated view.
+   *
+   * The previous implementation read `response.access_token` and threw when it was
+   * missing, so against a 2.x runtime every registration failed with a misleading
+   * "did not return an access token" error.
+   */
   const register = async (email, password, username = null) => {
     const response = await registerUser({ email, password, username });
+
+    // Tolerate a 1.x runtime, which still returns a token here. This lets the UI upgrade
+    // ahead of the backend rather than requiring a lockstep deploy.
+    const legacyToken = response?.access_token;
+    if (legacyToken) {
+      setStoredToken(legacyToken);
+      setToken(legacyToken);
+      return { verificationSent: false, token: legacyToken };
+    }
+
+    return { verificationSent: true, token: null };
+  };
+
+  /** Consume an emailed verification token; signs the user in on success. */
+  const verify = async (verificationToken) => {
+    const response = await verifyEmail(verificationToken);
     const nextToken = response?.access_token;
     if (!nextToken) {
-      throw new Error("Authentication did not return an access token.");
+      throw new Error("Verification did not return an access token.");
     }
     setStoredToken(nextToken);
     setToken(nextToken);
     return nextToken;
+  };
+
+  /**
+   * Rotate the current user's password.
+   *
+   * Stores the returned token. This is not optional: the change bumps `token_version`,
+   * invalidating every session including this one, so keeping the old token would 401 on
+   * the very next request.
+   */
+  const changeOwnPassword = async (currentPassword, newPassword) => {
+    const response = await changePassword(currentPassword, newPassword);
+    const nextToken = response?.access_token;
+    if (nextToken) {
+      setStoredToken(nextToken);
+      setToken(nextToken);
+    }
+    return nextToken ?? null;
   };
 
   const logout = () => {
@@ -117,6 +168,8 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       register,
+      verify,
+      changeOwnPassword,
       logout,
       setToken,
     }),
