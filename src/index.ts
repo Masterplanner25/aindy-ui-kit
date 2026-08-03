@@ -16,7 +16,15 @@ export {
 } from "./api/_core.js";
 
 export { ROUTES, FEATURE_FLAGS } from "./api/_routes.js";
-export { bootIdentity, loginUser, registerUser } from "./api/auth.js";
+export {
+  bootIdentity,
+  changePassword,
+  forgotPassword,
+  loginUser,
+  registerUser,
+  resetPassword,
+  verifyEmail,
+} from "./api/auth.js";
 
 // Contexts
 export { AuthProvider, useAuth } from "./context/AuthContext";

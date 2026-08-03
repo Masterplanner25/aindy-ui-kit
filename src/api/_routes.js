@@ -27,6 +27,12 @@ const AUTH = Object.freeze({
   LOGIN: `${BASE}/auth/login`,
   REGISTER: `${BASE}/auth/register`,
   LOGOUT: `${BASE}/auth/logout`,
+  // runtime >= 2.0.0. Registration no longer returns a token — it is issued by
+  // VERIFY_EMAIL once the emailed link is followed.
+  VERIFY_EMAIL: `${BASE}/auth/verify-email`,
+  PASSWORD_CHANGE: `${BASE}/auth/password/change`,
+  PASSWORD_FORGOT: `${BASE}/auth/password/forgot`,
+  PASSWORD_RESET: `${BASE}/auth/password/reset`,
 });
 
 // ─── TASKS — monolith-only, not served by aindy-runtime ───────────────────────
