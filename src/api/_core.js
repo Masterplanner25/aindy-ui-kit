@@ -62,8 +62,65 @@ export function taggedRequest(domain, apiFn) {
   };
 }
 
+// FR-37 / FR-19 — the runtime says on the wire whether a body is the execution envelope:
+// `X-AINDY-Envelope: v1` (since aindy-runtime 2.6.0). `request()` reads it and RESOLVES the
+// body there, so `unwrapEnvelope` no longer has to guess from shape. A resolved value carries
+// this non-enumerable mark (`"v1"` for an envelope that was unwrapped, `null` for a body the
+// runtime left unstamped — i.e. provably bare). Values without the mark did not come through
+// `request()` on a stamping runtime, and fall back to the shape test.
+export const ENVELOPE_HEADER = "X-AINDY-Envelope";
+const RESOLVED = Symbol.for("aindy.ui-kit.envelope.resolved");
+// Set the first time THIS backend stamps a response. From then on an unstamped body is bare —
+// a runtime that stamps envelopes stamped this one if it were one. A runtime older than 2.6.0
+// never sets it, so the shape test keeps deciding for it, exactly as before.
+let envelopeHeaderSeen = false;
+
+/** Test seam: forget that the backend has been seen stamping. */
+export function _resetEnvelopeDetection() {
+  envelopeHeaderSeen = false;
+}
+
+function markResolved(value, envelope) {
+  if (value !== null && typeof value === "object") {
+    Object.defineProperty(value, RESOLVED, { value: envelope, enumerable: false, configurable: true });
+  }
+  return value;
+}
+
+function unwrapStampedEnvelope(body) {
+  // The runtime SAID this is an envelope — no shape test. Execution envelopes carry `error`;
+  // surface it as ApiError, as the shape path always did.
+  if (body && typeof body === "object") {
+    if ("error" in body && body.error) {
+      throw new ApiError(200, body.error, body);
+    }
+    return body.data !== undefined ? body.data : null;
+  }
+  return body;
+}
+
+function resolveBody(res, parsed) {
+  const envelope = res.headers?.get?.(ENVELOPE_HEADER);
+  if (envelope) {
+    envelopeHeaderSeen = true;
+    return markResolved(unwrapStampedEnvelope(parsed), envelope);
+  }
+  if (envelopeHeaderSeen) {
+    return markResolved(parsed, null);
+  }
+  return parsed;
+}
+
 export function unwrapEnvelope(response) {
-  // Unwrap any enveloped response that carries a `data` payload.
+  // A value `request()` already resolved from the header is returned untouched — an envelope
+  // was unwrapped there, and a bare body must NOT be mistaken for one because it happens to
+  // carry a `data` key (FR-19's whole finding). Every existing `.then(unwrapEnvelope)` keeps
+  // working; only the misclassification goes away.
+  if (response !== null && typeof response === "object" && RESOLVED in response) {
+    return response;
+  }
+  // Fallback for values that did not come through `request()` on a stamping runtime (an older
+  // runtime, or a hand-built value): unwrap by shape, as before.
   // Execution envelopes additionally carry `error`; surface it as ApiError.
   // Auth envelopes carry { status, data, trace_id, metadata } with no top-level error.
   if (response && typeof response === "object" && "data" in response) {
@@ -195,11 +252,13 @@ async function request(path, opts = {}) {
     }
 
     const text = await res.text();
+    let parsed;
     try {
-      return normalizeArrayFields(JSON.parse(text));
+      parsed = normalizeArrayFields(JSON.parse(text));
     } catch {
       return text;
     }
+    return resolveBody(res, parsed);
   } catch (err) {
     if (err?.name === "AbortError") {
       throw new ApiError(408, "Request timed out after 30 seconds.", null);
@@ -299,11 +358,13 @@ async function requestAbsolute(url, opts = {}) {
     }
 
     const text = await res.text();
+    let parsed;
     try {
-      return normalizeArrayFields(JSON.parse(text));
+      parsed = normalizeArrayFields(JSON.parse(text));
     } catch {
       return text;
     }
+    return resolveBody(res, parsed);
   } catch (err) {
     if (err?.name === "AbortError") {
       throw new ApiError(408, "Request timed out after 30 seconds.", null);
