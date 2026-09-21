@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.1.0 — 2026-09-20
+
+Pairs with `aindy-runtime>=2.6.0` for the new behaviour; against an older runtime nothing
+changes. **Additive** — no consumer call site has to change.
+
+### Fixed — `request()` reads `X-AINDY-Envelope`; a bare `{data: …}` row is no longer mistaken for an execution envelope (runtime FR-37, FR-19's client half)
+
+The runtime has stamped `X-AINDY-Envelope: v1` on every canonical execution envelope since
+2.6.0, and nothing in the kit read it: `request()` parsed the body and returned it, and
+`unwrapEnvelope()` decided by shape (`"data" in response`). A bare row from a non-pipeline route
+that happens to carry a `data` key was unwrapped as if it were an envelope — five surfaces
+rendered blank with no error, and the consuming app carried eleven per-route workarounds.
+
+Now `request()` (and `requestAbsolute()`) resolve the body from the header: when it is present
+the body is unwrapped **there** (an envelope `error` surfaces as `ApiError`, as before), and the
+result carries a non-enumerable mark that makes `unwrapEnvelope()` a no-op on it. Once the
+backend has been seen stamping, an unstamped body is provably bare and is marked so it is never
+shape-tested. A backend that has never stamped (a runtime older than 2.6.0) keeps the shape test
+as the fallback, exactly as before — so nothing regresses against an older runtime, and nothing
+is unwrapped twice when a payload's own `data` field exists.
+
+`unwrapEnvelope(value)`'s signature is unchanged; every existing `.then(unwrapEnvelope)` keeps
+working. New exports: `ENVELOPE_HEADER`, and `_resetEnvelopeDetection()` (a test seam).
+Consumers can now delete per-route "is this route enveloped?" knowledge.
+
 ## 2.0.0 — 2026-08-02
 
 Pairs with `aindy-runtime@2.0.0`. **Breaking**, because the runtime's registration contract
