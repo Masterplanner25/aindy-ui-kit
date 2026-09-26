@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.1.1 — 2026-09-26
+
+Pairs with any `aindy-runtime>=2.6.0`. Additive except one narrowed error mapping (below).
 
 ### Added — a per-call request timeout, `timeoutMs` (runtime FR-47)
 
