@@ -1,6 +1,26 @@
 # Changelog
 
-## Unreleased
+## 2.1.1 — 2026-09-26
+
+Pairs with any `aindy-runtime>=2.6.0`. Additive except one narrowed error mapping (below).
+
+### Added — a per-call request timeout, `timeoutMs` (runtime FR-47)
+
+Every request aborted at 30 s with no override. Creating an agent run is one synchronous request
+that includes planning (an LLM call, routinely 30–40 s), so the console reported a failure for a
+run the server created seconds later, and the owner submitted again: two duplicate runs in one
+morning. `request()`, `requestAbsolute()` and everything built on them now take
+`timeoutMs` (default `DEFAULT_TIMEOUT_MS` = 30000, unchanged). `0` arms no kit timer. An
+invalid value falls back to the default, never to "no timeout". The 503 `Retry-After` retry keeps
+the caller's value. `timeoutMs` is not forwarded to `fetch`.
+
+### Changed — a 408 means the kit's own timer fired
+
+Previously ANY abort became `ApiError(408, "Request timed out after 30 seconds.")`, including an
+abort from the caller's own `signal`, which is untrue. A caller-initiated abort now rejects with
+the `AbortError` itself. The 408 message names the timeout actually used. **A consumer that
+caught `ApiError(408)` to detect its OWN aborts must check `err.name === "AbortError"`
+instead.**
 
 ### Added — `_resetEnvelopeDetection` and `ENVELOPE_HEADER` exported from the package entry (runtime FR-45)
 
