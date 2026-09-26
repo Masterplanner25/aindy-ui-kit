@@ -15,6 +15,7 @@ export {
   API_BASE,
   ENVELOPE_HEADER,
   _resetEnvelopeDetection,
+  DEFAULT_TIMEOUT_MS,
 } from "./api/_core.js";
 
 export { ROUTES, FEATURE_FLAGS } from "./api/_routes.js";
