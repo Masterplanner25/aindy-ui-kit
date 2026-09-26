@@ -32,9 +32,19 @@ The authenticated request layer against the runtime. `buildApiUrl` prepends `API
 | `request`, `authRequest`, `adminRequest`, `taggedRequest`, `requestAbsolute` | HTTP calls (auth-scoped / admin-scoped / cache-tagged / absolute-URL variants) |
 | `buildApiUrl` | Resolve a `ROUTES` value against `API_BASE` |
 | `getStoredToken`, `setStoredToken`, `clearStoredToken` | JWT storage |
-| `unwrapEnvelope` | Unwrap the runtime's `{ data: … }` response envelope |
+| `unwrapEnvelope` | Unwrap the runtime's `{ data: … }` response envelope (see the latch note below) |
+| `ENVELOPE_HEADER` | `"X-AINDY-Envelope"`, the header the runtime stamps on envelope bodies |
+| `_resetEnvelopeDetection` | Test seam: forget that the backend has been seen stamping (reset the latch between test cases) |
 | `ApiError` | Typed error carrying status + body |
 | `API_BASE` | Build-time API base (`VITE_API_BASE_URL`, default `""` — relative to origin) |
+
+**The envelope latch.** Once this client has seen one response stamped `X-AINDY-Envelope`,
+`request()` resolves every body itself, and `unwrapEnvelope` becomes a no-op for everything,
+including an envelope a server route forgot to stamp. Before that first stamped response it
+unwraps by shape. An unstamped envelope therefore renders differently depending on which page
+a session opened first. The cure is server-side (aindy-runtime FR-45 stamps the runtime's own
+adapters; an app's own adapter must stamp its envelope bodies). In tests, call
+`_resetEnvelopeDetection()` between cases that exercise both regimes.
 
 ### Routes (`./api/_routes.js`)
 
