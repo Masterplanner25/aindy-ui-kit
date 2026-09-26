@@ -12,6 +12,8 @@ export {
   taggedRequest,
   unwrapEnvelope,
   API_BASE,
+  ENVELOPE_HEADER,
+  _resetEnvelopeDetection,
 } from "./_core.js";
 
 export { ROUTES } from "./_routes.js";

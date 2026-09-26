@@ -13,6 +13,8 @@ export {
   taggedRequest,
   unwrapEnvelope,
   API_BASE,
+  ENVELOPE_HEADER,
+  _resetEnvelopeDetection,
 } from "./api/_core.js";
 
 export { ROUTES, FEATURE_FLAGS } from "./api/_routes.js";

@@ -111,6 +111,18 @@ function resolveBody(res, parsed) {
   return parsed;
 }
 
+/**
+ * Return the payload of a runtime execution envelope, or the value unchanged.
+ *
+ * ★ After this client has seen ONE response stamped `X-AINDY-Envelope`, every value that came
+ * through `request()` is already resolved (an envelope was unwrapped there; an unstamped body
+ * was marked bare), and this function returns it untouched: it is a no-op for everything,
+ * including an envelope the server forgot to stamp. Before that first stamped response it
+ * unwraps by shape. So an UNSTAMPED envelope renders differently depending on which request a
+ * session made first. The fix is on the server: stamp every body that is an envelope
+ * (aindy-runtime FR-45). Tests that exercise both regimes call `_resetEnvelopeDetection()`
+ * between cases.
+ */
 export function unwrapEnvelope(response) {
   // A value `request()` already resolved from the header is returned untouched — an envelope
   // was unwrapped there, and a bare body must NOT be mistaken for one because it happens to

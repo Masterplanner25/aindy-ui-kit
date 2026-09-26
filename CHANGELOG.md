@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added — `_resetEnvelopeDetection` and `ENVELOPE_HEADER` exported from the package entry (runtime FR-45)
+
+Both were declared in the published `.d.ts` but not exported from `dist/index.js`, so a
+consumer's tests could not reset the envelope latch between cases. The only workaround was
+test ordering. No behaviour change.
+
+### Changed — `unwrapEnvelope`'s latch is documented where it is used
+
+After the first stamped response, `unwrapEnvelope` is a no-op for everything, which is not what
+its name says. The README and the function's doc comment now say so, and say that the cure for
+an unstamped envelope is on the server (runtime FR-45).
+
 ## 2.1.0 — 2026-09-20
 
 Pairs with `aindy-runtime>=2.6.0` for the new behaviour; against an older runtime nothing
