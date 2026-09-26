@@ -36,7 +36,14 @@ The authenticated request layer against the runtime. `buildApiUrl` prepends `API
 | `ENVELOPE_HEADER` | `"X-AINDY-Envelope"`, the header the runtime stamps on envelope bodies |
 | `_resetEnvelopeDetection` | Test seam: forget that the backend has been seen stamping (reset the latch between test cases) |
 | `ApiError` | Typed error carrying status + body |
+| `DEFAULT_TIMEOUT_MS` | `30000`, the kit's request timeout unless a call passes `timeoutMs` |
 | `API_BASE` | Build-time API base (`VITE_API_BASE_URL`, default `""` — relative to origin) |
+
+**Request timeout.** Every `request` family call aborts after 30 s by default and rejects with
+`ApiError(408)`. A call that legitimately takes longer passes its own:
+`request(path, { method: "POST", timeoutMs: 90_000 })`. `timeoutMs: 0` arms no kit timer, and
+the caller's `signal` governs. A 408 means **the kit's timer fired**. An abort from the caller's
+own `signal` rejects with the `AbortError` itself.
 
 **The envelope latch.** Once this client has seen one response stamped `X-AINDY-Envelope`,
 `request()` resolves every body itself, and `unwrapEnvelope` becomes a no-op for everything,

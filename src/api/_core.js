@@ -207,14 +207,42 @@ function dispatchVersionWarning(message) {
   );
 }
 
+// FR-47 (aindy-runtime register) — the kit's request timeout, per call. 30 s is right for almost
+// every call; the one that needs more (agent planning is a synchronous LLM call that routinely
+// takes 30–40 s) says so with `timeoutMs`. `0` means no kit timeout: the caller's `signal` governs.
+export const DEFAULT_TIMEOUT_MS = 30_000;
+
+function resolveTimeoutMs(value) {
+  if (value === undefined || value === null) return DEFAULT_TIMEOUT_MS;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : DEFAULT_TIMEOUT_MS;
+}
+
+// Start the kit's own timer, and remember whether IT fired: only then is an abort a timeout (408).
+// An abort from the caller's `signal` is the caller's decision and is re-thrown as it is.
+function startKitTimeout(controller, timeoutMs) {
+  const state = { timedOut: false, id: null };
+  if (typeof window !== "undefined" && timeoutMs > 0) {
+    state.id = setTimeout(() => {
+      state.timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+  }
+  return state;
+}
+
+function timeoutError(timeoutMs) {
+  const seconds = timeoutMs / 1000;
+  return new ApiError(408, `Request timed out after ${seconds} seconds.`, null);
+}
+
 async function request(path, opts = {}) {
   const url = buildApiUrl(path);
   const token = getStoredToken();
   const controller = new AbortController();
-  const { _isRetry = false, ...fetchOpts } = opts;
-  const timeoutId = typeof window !== "undefined"
-    ? setTimeout(() => controller.abort(), 30_000)
-    : null;
+  const { _isRetry = false, timeoutMs: requestedTimeoutMs, ...fetchOpts } = opts;
+  const timeoutMs = resolveTimeoutMs(requestedTimeoutMs);
+  const kitTimeout = startKitTimeout(controller, timeoutMs);
 
   if (fetchOpts.signal) {
     if (fetchOpts.signal.aborted) {
@@ -246,7 +274,7 @@ async function request(path, opts = {}) {
       const retryAfter = parseInt(res.headers.get("Retry-After") || "0", 10);
       if (retryAfter > 0 && retryAfter <= 60 && !_isRetry) {
         await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-        return request(path, { ...fetchOpts, _isRetry: true });
+        return request(path, { ...fetchOpts, timeoutMs: requestedTimeoutMs, _isRetry: true });
       }
     }
 
@@ -272,16 +300,16 @@ async function request(path, opts = {}) {
     }
     return resolveBody(res, parsed);
   } catch (err) {
-    if (err?.name === "AbortError") {
-      throw new ApiError(408, "Request timed out after 30 seconds.", null);
+    if (err?.name === "AbortError" && kitTimeout.timedOut) {
+      throw timeoutError(timeoutMs);
     }
     if (err instanceof TypeError && !err.status) {
       throw new ApiError(0, "Network error. Check your connection.", null);
     }
     throw err;
   } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (kitTimeout.id) {
+      clearTimeout(kitTimeout.id);
     }
   }
 }
@@ -317,10 +345,9 @@ export function adminRequest(path, opts = {}) {
 async function requestAbsolute(url, opts = {}) {
   const token = getStoredToken();
   const controller = new AbortController();
-  const { _isRetry = false, ...fetchOpts } = opts;
-  const timeoutId = typeof window !== "undefined"
-    ? setTimeout(() => controller.abort(), 30_000)
-    : null;
+  const { _isRetry = false, timeoutMs: requestedTimeoutMs, ...fetchOpts } = opts;
+  const timeoutMs = resolveTimeoutMs(requestedTimeoutMs);
+  const kitTimeout = startKitTimeout(controller, timeoutMs);
 
   if (fetchOpts.signal) {
     if (fetchOpts.signal.aborted) {
@@ -352,7 +379,7 @@ async function requestAbsolute(url, opts = {}) {
       const retryAfter = parseInt(res.headers.get("Retry-After") || "0", 10);
       if (retryAfter > 0 && retryAfter <= 60 && !_isRetry) {
         await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-        return requestAbsolute(url, { ...fetchOpts, _isRetry: true });
+        return requestAbsolute(url, { ...fetchOpts, timeoutMs: requestedTimeoutMs, _isRetry: true });
       }
     }
 
@@ -378,16 +405,16 @@ async function requestAbsolute(url, opts = {}) {
     }
     return resolveBody(res, parsed);
   } catch (err) {
-    if (err?.name === "AbortError") {
-      throw new ApiError(408, "Request timed out after 30 seconds.", null);
+    if (err?.name === "AbortError" && kitTimeout.timedOut) {
+      throw timeoutError(timeoutMs);
     }
     if (err instanceof TypeError && !err.status) {
       throw new ApiError(0, "Network error. Check your connection.", null);
     }
     throw err;
   } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (kitTimeout.id) {
+      clearTimeout(kitTimeout.id);
     }
   }
 }
